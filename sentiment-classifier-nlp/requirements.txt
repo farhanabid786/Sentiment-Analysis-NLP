@@ -1,11 +1,6 @@
-pandas
-numpy
-matplotlib
-seaborn
-nltk 
-scikit-learn
-Flask
-pickle
-warnings
-gunicorn
-pickle
+Flask==3.1.3
+gunicorn==23.0.0
+nltk==3.10.0
+numpy==2.5.1
+pandas==3.0.3
+scikit-learn==1.9.0
