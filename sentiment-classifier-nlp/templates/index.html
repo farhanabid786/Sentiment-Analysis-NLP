@@ -1,35 +1,838 @@
 <!DOCTYPE html>
-<html >
-<!--From https://codepen.io/frytyler/pen/EGdtg-->
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ML API</title>
-  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
-<link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentimentScope | NLP Review Sentiment Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5efe6;
+      --bg-alt: #ece3d6;
+      --surface: rgba(255, 255, 255, 0.78);
+      --surface-strong: #ffffff;
+      --text: #16202a;
+      --muted: #596775;
+      --accent: #ff6b35;
+      --accent-2: #1f7a8c;
+      --accent-3: #143642;
+      --border: rgba(22, 32, 42, 0.1);
+      --shadow: 0 24px 60px rgba(20, 54, 66, 0.14);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --container: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 107, 53, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(31, 122, 140, 0.2), transparent 28%),
+        linear-gradient(135deg, var(--bg) 0%, #f8f4ee 48%, var(--bg-alt) 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      border-radius: 999px;
+      filter: blur(18px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+    }
+
+    body::before {
+      width: 320px;
+      height: 320px;
+      right: -90px;
+      top: 90px;
+      background: rgba(31, 122, 140, 0.18);
+      animation: float 14s ease-in-out infinite;
+    }
+
+    body::after {
+      width: 260px;
+      height: 260px;
+      left: -70px;
+      bottom: 50px;
+      background: rgba(255, 107, 53, 0.14);
+      animation: float 18s ease-in-out infinite reverse;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(100%, var(--container));
+      margin: 0 auto;
+      padding: 28px 20px 52px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0 24px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: #fff;
+      box-shadow: 0 16px 30px rgba(255, 107, 53, 0.28);
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+    }
+
+    .brand-text strong,
+    h1,
+    h2,
+    h3,
+    .metric-value {
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .brand-text span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-3);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: center;
+      padding: 20px 0 28px;
+    }
+
+    .hero-copy {
+      padding: 18px 0;
+      animation: rise 0.8s ease both;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid var(--border);
+      color: var(--accent-3);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      box-shadow: 0 12px 24px rgba(20, 54, 66, 0.06);
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(2.6rem, 5vw, 4.9rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      max-width: 62ch;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 0 20px;
+      border-radius: 16px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.96rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #ff8a5c 100%);
+      color: #fff;
+      box-shadow: 0 16px 28px rgba(255, 107, 53, 0.24);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--accent-3);
+      border-color: rgba(20, 54, 66, 0.12);
+    }
+
+    .hero-panel {
+      position: relative;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.6));
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      padding: 22px;
+      animation: rise 0.95s ease both;
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      inset: -40px auto auto -20px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(31, 122, 140, 0.18), transparent 70%);
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .panel-card {
+      position: relative;
+      border-radius: 22px;
+      background: var(--surface-strong);
+      padding: 20px;
+      border: 1px solid rgba(20, 54, 66, 0.08);
+      box-shadow: 0 14px 30px rgba(20, 54, 66, 0.08);
+    }
+
+    .panel-card + .panel-card {
+      margin-top: 14px;
+    }
+
+    .panel-label {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(31, 122, 140, 0.1);
+      color: var(--accent-2);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .panel-title {
+      margin: 14px 0 8px;
+      font-size: 1.4rem;
+    }
+
+    .panel-text {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(245, 239, 230, 0.75);
+      border: 1px solid rgba(22, 32, 42, 0.08);
+    }
+
+    .metric-value {
+      display: block;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--accent-3);
+    }
+
+    .metric-label {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(22, 32, 42, 0.08);
+      box-shadow: 0 18px 40px rgba(20, 54, 66, 0.08);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .features {
+      grid-column: span 5;
+    }
+
+    .features h2,
+    .analyzer h2,
+    .story h2,
+    .results h2 {
+      margin: 0 0 14px;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(245, 239, 230, 0.65);
+      border: 1px solid rgba(22, 32, 42, 0.06);
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: linear-gradient(135deg, rgba(31, 122, 140, 0.16), rgba(255, 107, 53, 0.18));
+      color: var(--accent-3);
+      font-weight: 800;
+    }
+
+    .feature-item h3 {
+      margin: 0 0 4px;
+      font-size: 1.02rem;
+    }
+
+    .feature-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.94rem;
+    }
+
+    .analyzer {
+      grid-column: span 7;
+    }
+
+    .form-shell {
+      margin-top: 18px;
+      padding: 22px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+      border: 1px solid rgba(22, 32, 42, 0.08);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    label {
+      display: inline-block;
+      margin-bottom: 10px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--accent-3);
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(22, 32, 42, 0.13);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--text);
+      font: inherit;
+      padding: 16px 18px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    textarea:focus,
+    input[type="text"]:focus {
+      border-color: rgba(255, 107, 53, 0.5);
+      box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.12);
+    }
+
+    .form-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .char-count {
+      font-weight: 700;
+      color: var(--accent-3);
+    }
+
+    .result-box {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(20, 54, 66, 0.96), rgba(31, 122, 140, 0.95));
+      color: #f8fbfc;
+      box-shadow: 0 20px 40px rgba(20, 54, 66, 0.18);
+    }
+
+    .result-box .result-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgba(248, 251, 252, 0.72);
+    }
+
+    .result-box .result-text {
+      font-size: 1.15rem;
+      line-height: 1.7;
+      font-weight: 600;
+    }
+
+    .story {
+      grid-column: span 12;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .timeline-step {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(245, 239, 230, 0.65);
+      border: 1px solid rgba(22, 32, 42, 0.06);
+    }
+
+    .timeline-step span {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 107, 53, 0.12);
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .timeline-step h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .timeline-step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.93rem;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 22px;
+      padding: 18px 2px 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .footer strong {
+      color: var(--accent-3);
+    }
+
+    .fade-in {
+      animation: rise 0.8s ease both;
+    }
+
+    .delay-1 {
+      animation-delay: 0.08s;
+    }
+
+    .delay-2 {
+      animation-delay: 0.16s;
+    }
+
+    .delay-3 {
+      animation-delay: 0.24s;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes float {
+      0%,
+      100% {
+        transform: translate3d(0, 0, 0);
+      }
+      50% {
+        transform: translate3d(0, -16px, 0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .content-grid,
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+
+      .features,
+      .analyzer,
+      .story {
+        grid-column: span 1;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 20px 14px 40px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        gap: 10px 14px;
+      }
+
+      h1 {
+        font-size: clamp(2.2rem, 14vw, 3.4rem);
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
-
 <body>
- <div class="login">
-	<h1>Predict Review Sentiment</h1>
+  <div class="page">
+    <header class="topbar fade-in">
+      <a class="brand" href="#top">
+        <div class="brand-mark">S</div>
+        <div class="brand-text">
+          <strong>SentimentScope</strong>
+          <span>NLP review sentiment analyzer</span>
+        </div>
+      </a>
 
-     <!-- Main Input For Receiving Query to our ML -->
-    <form action="{{ url_for('predict')}}"method="post">
-    	<input type="text" name="reviewtext" placeholder="review text" required="required" />
-        <!--  <input type="text" name="test_score" placeholder="Test Score" required="required" />
-		<input type="text" name="interview_score" placeholder="Interview Score" required="required" /> -->
+      <nav class="nav-links" aria-label="Page navigation">
+        <a href="#features">Features</a>
+        <a href="#analyzer">Analyze</a>
+        <a href="#workflow">Workflow</a>
+      </nav>
+    </header>
 
-        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-    </form>
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">NLP sentiment analysis made visual</div>
+          <h1>Turn review text into clear sentiment insights.</h1>
+          <p>
+            This landing page wraps the Flask-powered sentiment classifier in a cleaner,
+            more modern experience. Paste a review, let the model process the text, and
+            get a sentiment result instantly.
+          </p>
 
-   <br>
-   <br>
-   {{ prediction_text }}
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#analyzer">Try the analyzer</a>
+            <a class="btn btn-secondary" href="#workflow">See the workflow</a>
+          </div>
+        </div>
 
- </div>
+        <aside class="hero-panel">
+          <div class="panel-card">
+            <span class="panel-label">Model snapshot</span>
+            <h2 class="panel-title">Fast classification for user review text</h2>
+            <p class="panel-text">
+              The app uses NLTK preprocessing, a saved TF-IDF vectorizer, and a trained
+              machine learning model to map text into sentiment categories.
+            </p>
 
+            <div class="metric-grid">
+              <div class="metric">
+                <span class="metric-value">4</span>
+                <span class="metric-label">Supported outputs</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">TF-IDF</span>
+                <span class="metric-label">Feature extraction</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value">Flask</span>
+                <span class="metric-label">Web interface</span>
+              </div>
+            </div>
+          </div>
 
+          <div class="panel-card">
+            <span class="panel-label">Highlights</span>
+            <p class="panel-text">
+              Built for experimentation, demoing, and extending with new NLP datasets or
+              alternate models.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="content-grid" id="features">
+        <article class="section features fade-in delay-1">
+          <h2>Why this app is useful</h2>
+          <p class="panel-text">
+            The project keeps the machine learning part focused and the user experience easy
+            to understand, making it suitable for demos, classroom projects, and quick
+            experimentation.
+          </p>
+
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-icon">1</div>
+              <div>
+                <h3>Clean preprocessing</h3>
+                <p>Text is normalized, lemmatized, and stripped of noise before prediction.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">2</div>
+              <div>
+                <h3>Model-backed response</h3>
+                <p>The result comes from a trained model rather than a simple keyword rule set.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">3</div>
+              <div>
+                <h3>Easy to extend</h3>
+                <p>You can replace the model, vectorizer, or dataset as your project evolves.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section analyzer fade-in delay-2" id="analyzer">
+          <h2>Analyze a review</h2>
+          <p class="panel-text">
+            Enter review text below to send it through the classifier. The output will appear
+            in the result panel after the form is submitted.
+          </p>
+
+          <div class="form-shell">
+            <form action="{{ url_for('predict') }}" method="post" id="sentiment-form">
+              <div class="input-wrap">
+                <label for="reviewtext">Review text</label>
+                <textarea
+                  id="reviewtext"
+                  name="reviewtext"
+                  placeholder="Type or paste a customer review, opinion, or comment here..."
+                  required="required"
+                ></textarea>
+                <div class="form-meta">
+                  <span>Press submit to run the sentiment model.</span>
+                  <span class="char-count" id="charCount">0 characters</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 16px;">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Predict sentiment</button>
+              </div>
+            </form>
+
+            <div class="result-box" aria-live="polite">
+              <span class="result-label">Prediction result</span>
+              <div class="result-text" id="resultText">
+                {% if prediction_text %}
+                  {{ prediction_text }}
+                {% else %}
+                  Your prediction will appear here after analysis.
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section story fade-in delay-3" id="workflow">
+          <h2>How the workflow fits together</h2>
+          <p class="panel-text">
+            The page is structured so visitors can understand the app before they use it.
+            Each step below matches the flow inside the Flask application.
+          </p>
+
+          <div class="timeline">
+            <div class="timeline-step">
+              <span>01</span>
+              <h3>User input</h3>
+              <p>A visitor enters a review or short text in the input field.</p>
+            </div>
+            <div class="timeline-step">
+              <span>02</span>
+              <h3>Text cleaning</h3>
+              <p>The app removes punctuation, lowercases the text, and lemmatizes words.</p>
+            </div>
+            <div class="timeline-step">
+              <span>03</span>
+              <h3>Vectorization</h3>
+              <p>The cleaned text is transformed into TF-IDF features using the saved vectorizer.</p>
+            </div>
+            <div class="timeline-step">
+              <span>04</span>
+              <h3>Prediction</h3>
+              <p>The model returns a sentiment label and the result is displayed on the page.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <div><strong>SentimentScope</strong> is built for NLP sentiment experiments and demos.</div>
+        <div>Made to be clear, fast, and easy to improve.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const textInput = document.getElementById('reviewtext');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const sentimentForm = document.getElementById('sentiment-form');
+
+    const updateMeta = () => {
+      const value = textInput.value.trim();
+      const count = value.length;
+      charCount.textContent = `${count} character${count === 1 ? '' : 's'}`;
+      submitBtn.textContent = count > 0 ? 'Predict sentiment' : 'Predict sentiment';
+    };
+
+    textInput.addEventListener('input', updateMeta);
+    textInput.addEventListener('focus', updateMeta);
+
+    sentimentForm.addEventListener('submit', () => {
+      submitBtn.textContent = 'Analyzing...';
+      submitBtn.disabled = true;
+    });
+
+    updateMeta();
+  </script>
 </body>
 </html>
