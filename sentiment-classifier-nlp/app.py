@@ -1,9 +1,4 @@
 import re
-import pandas as pd 
-import numpy as np 
-import matplotlib.pyplot as plt 
-import seaborn as sns
-import string
 import nltk
 import warnings 
 nltk.download('stopwords')
@@ -12,7 +7,6 @@ nltk.download('omw-1.4')
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-from sklearn.feature_extraction.text import TfidfVectorizer
 from flask import Flask, request, jsonify, render_template
 import pickle
 
@@ -28,7 +22,6 @@ def lemmatize_text(sentence):
     return corpus
 def transform_text(sentence):
     corp = lemmatize_text(sentence)
-    vectorizer = pickle.load(open("cv.pickle", 'rb')) 
     X = vectorizer.transform(corp).toarray()
     
     return X
@@ -37,6 +30,7 @@ def transform_text(sentence):
 
 app = Flask(__name__)
 model = pickle.load(open('nlp_review_sentiment_model.pkl', 'rb'))
+vectorizer = pickle.load(open('cv.pickle', 'rb'))
 
 @app.route('/')
 def home():
