@@ -1,4 +1,5 @@
 import re
+import os
 import nltk
 import warnings 
 nltk.download('stopwords')
@@ -7,7 +8,7 @@ nltk.download('omw-1.4')
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import pickle
 
 def lemmatize_text(sentence):
@@ -36,6 +37,11 @@ vectorizer = pickle.load(open('cv.pickle', 'rb'))
 def home():
     return render_template('index.html')
 
+
+@app.route('/logo.png')
+def logo():
+    return send_from_directory(os.path.join(app.root_path, 'templates'), 'logo.png')
+
 @app.route('/predict',methods=['POST'])
 def predict():
     '''
@@ -53,12 +59,13 @@ def predict():
          output = "neutral"
     elif(prediction[0]==-1):
          output = "irrelavant"
-         
-    
 
-   
-
-    return render_template('index.html', prediction_text='This review is  {}'.format(output))
+    return render_template(
+        'index.html',
+        prediction_text='This review is {}'.format(output),
+        review_text=review,
+        review_analysis=output
+    )
 
 
 if __name__ == "__main__":

@@ -101,16 +101,23 @@
     }
 
     .brand-mark {
-      width: 44px;
-      height: 44px;
+      width: 52px;
+      height: 52px;
       display: grid;
       place-items: center;
       border-radius: 14px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-      color: #fff;
-      box-shadow: 0 16px 30px rgba(255, 107, 53, 0.28);
-      font-family: "Space Grotesk", sans-serif;
-      font-weight: 700;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(20, 54, 66, 0.08);
+      box-shadow: 0 16px 30px rgba(255, 107, 53, 0.18);
+      overflow: hidden;
+      padding: 6px;
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
 
     .brand-text strong,
@@ -128,23 +135,58 @@
       margin-top: 2px;
     }
 
-    .nav-links {
+    .nav-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       align-items: center;
     }
 
-    .nav-links a {
-      color: var(--muted);
+    .nav-actions button,
+    .nav-actions a {
+      appearance: none;
+      border: 1px solid rgba(20, 54, 66, 0.12);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(247, 241, 233, 0.95));
+      color: var(--accent-3);
       text-decoration: none;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: color 0.2s ease;
+      font-weight: 700;
+      font-size: 0.94rem;
+      border-radius: 999px;
+      padding: 11px 18px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(20, 54, 66, 0.08);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
 
-    .nav-links a:hover {
-      color: var(--accent-3);
+    .nav-actions button:hover,
+    .nav-actions button:focus-visible,
+    .nav-actions a:hover,
+    .nav-actions a:focus-visible {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.16), rgba(255, 138, 92, 0.22));
+      border-color: rgba(255, 107, 53, 0.38);
+      color: #8f3413;
+      box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.16), 0 14px 28px rgba(255, 107, 53, 0.2);
+      outline: none;
+    }
+
+    .nav-actions .primary-nav {
+      background: linear-gradient(135deg, var(--accent) 0%, #ff8a5c 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 16px 28px rgba(255, 107, 53, 0.18);
+    }
+
+    .nav-actions .primary-nav:hover {
+      background: linear-gradient(135deg, #ff7a49 0%, #ff9a72 100%);
+      box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.2), 0 18px 32px rgba(255, 107, 53, 0.28);
+    }
+
+    .nav-actions a {
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .hero {
@@ -337,6 +379,10 @@
       grid-column: span 5;
     }
 
+    .intro-card {
+      grid-column: span 12;
+    }
+
     .features h2,
     .analyzer h2,
     .story h2,
@@ -485,6 +531,29 @@
       grid-column: span 12;
     }
 
+    .verification {
+      grid-column: span 12;
+    }
+
+    .verify-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .verify-item {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(22, 32, 42, 0.08);
+      background: rgba(245, 239, 230, 0.65);
+    }
+
+    .verify-item strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--accent-3);
+    }
+
     .timeline {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -584,9 +653,11 @@
         grid-template-columns: 1fr;
       }
 
+      .intro-card,
       .features,
       .analyzer,
-      .story {
+      .story,
+      .verification {
         grid-column: span 1;
       }
 
@@ -609,7 +680,7 @@
         flex-direction: column;
       }
 
-      .nav-links {
+      .nav-actions {
         gap: 10px 14px;
       }
 
@@ -631,17 +702,20 @@
   <div class="page">
     <header class="topbar fade-in">
       <a class="brand" href="#top">
-        <div class="brand-mark">S</div>
+        <div class="brand-mark">
+          <img src="{{ url_for('logo') }}" alt="SentimentScope logo">
+        </div>
         <div class="brand-text">
           <strong>SentimentScope</strong>
           <span>NLP review sentiment analyzer</span>
         </div>
       </a>
 
-      <nav class="nav-links" aria-label="Page navigation">
-        <a href="#features">Features</a>
-        <a href="#analyzer">Analyze</a>
-        <a href="#workflow">Workflow</a>
+      <nav class="nav-actions" aria-label="Quick actions">
+        <button type="button" class="primary-nav" data-target="#analyzer">Analyze</button>
+        <button type="button" data-target="#features">Feature</button>
+        <button type="button" data-target="#verification">Verify</button>
+        <button type="button" data-target="#workflow">Workflow</button>
       </nav>
     </header>
 
@@ -657,8 +731,8 @@
           </p>
 
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#analyzer">Try the analyzer</a>
-            <a class="btn btn-secondary" href="#workflow">See the workflow</a>
+            <button class="btn btn-primary" type="button" data-target="#analyzer">Try the analyzer</button>
+            <button class="btn btn-secondary" type="button" data-target="#workflow">See the workflow</button>
           </div>
         </div>
 
@@ -695,6 +769,16 @@
             </p>
           </div>
         </aside>
+      </section>
+
+      <section class="content-grid" id="overview">
+        <article class="section intro-card fade-in delay-1">
+          <h2>How to use this page</h2>
+          <p class="panel-text">
+            Use the buttons in the top-right corner to jump directly to the analyzer, the feature overview, or the verification area. After you submit a review, the exact text you typed will stay visible below so you can compare your input with the predicted label.
+          </p>
+        </article>
+
       </section>
 
       <section class="content-grid" id="features">
@@ -747,7 +831,7 @@
                   name="reviewtext"
                   placeholder="Type or paste a customer review, opinion, or comment here..."
                   required="required"
-                ></textarea>
+                >{{ review_text or '' }}</textarea>
                 <div class="form-meta">
                   <span>Press submit to run the sentiment model.</span>
                   <span class="char-count" id="charCount">0 characters</span>
@@ -766,6 +850,36 @@
                   {{ prediction_text }}
                 {% else %}
                   Your prediction will appear here after analysis.
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section verification fade-in delay-3" id="verification">
+          <h2>Verification panel</h2>
+          <p class="panel-text">
+            This panel keeps your original review visible after the prediction so you can verify whether the sentiment matches the text you provided.
+          </p>
+
+          <div class="verify-list">
+            <div class="verify-item">
+              <strong>Original review text</strong>
+              <div id="reviewMirror">
+                {% if review_text %}
+                  {{ review_text }}
+                {% else %}
+                  Your submitted review will appear here after you click Predict sentiment.
+                {% endif %}
+              </div>
+            </div>
+            <div class="verify-item">
+              <strong>Predicted sentiment</strong>
+              <div id="sentimentMirror">
+                {% if review_analysis %}
+                  {{ review_analysis|capitalize }}
+                {% else %}
+                  No prediction yet.
                 {% endif %}
               </div>
             </div>
@@ -816,12 +930,22 @@
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
     const sentimentForm = document.getElementById('sentiment-form');
+    const actionButtons = document.querySelectorAll('[data-target]');
+
+    actionButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const target = document.querySelector(button.dataset.target);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
 
     const updateMeta = () => {
       const value = textInput.value.trim();
       const count = value.length;
       charCount.textContent = `${count} character${count === 1 ? '' : 's'}`;
-      submitBtn.textContent = count > 0 ? 'Predict sentiment' : 'Predict sentiment';
+      submitBtn.textContent = count > 0 ? 'Predict sentiment' : 'Enter text to predict';
     };
 
     textInput.addEventListener('input', updateMeta);
